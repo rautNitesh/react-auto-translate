@@ -1,4 +1,4 @@
-import React, {createContext, useCallback} from 'react';
+import React, {createContext, useCallback, Dispatch, setStateAction} from 'react';
 import TranslatorFactory from './helpers/translator-factory';
 import {TranslationHandler, CacheProvider} from './types';
 
@@ -15,6 +15,8 @@ type Props = {
   cacheProvider?: CacheProvider;
   children: string;
   googleApiKey: string;
+  loading: string;
+  setLoading: Dispatch<setStateAction<boolean>>;
 };
 
 export default function Translator({
@@ -23,9 +25,12 @@ export default function Translator({
   cacheProvider,
   children,
   googleApiKey,
+  loading,
+  setLoading
 }: Props): JSX.Element {
   const handleTranslationAsync: TranslationHandler = useCallback(
     async (value, setTranslation) => {
+      setLoading(true);
       const options = {
         to,
         from,
@@ -36,14 +41,17 @@ export default function Translator({
 
       if (translation) {
         setTranslation(translation);
+        setLoading(false)
       }
     },
-    [to, from, googleApiKey, cacheProvider]
+    [to, from, googleApiKey, cacheProvider, loading]
   );
 
   return (
     <TranslateContext.Provider value={handleTranslationAsync}>
-      <LanguageContext.Provider value={to}>{children}</LanguageContext.Provider>
+      <LanguageContext.Provider value={to}>
+        {children}
+        </LanguageContext.Provider>
     </TranslateContext.Provider>
   );
 }
